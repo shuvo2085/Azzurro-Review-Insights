@@ -1,7 +1,7 @@
  "use client";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, Building2, MessageSquareText, Sparkles, Upload, RefreshCw, Search, LayoutDashboard, Star, AlertTriangle, CheckCircle2, FileUp, ArrowUpRight } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
+import { Activity, Building2, MessageSquareText, Sparkles, RefreshCw, Search, LayoutDashboard, Star, AlertTriangle, CheckCircle2, FileUp } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import Papa from "papaparse";
 import type { Review } from "@/types/review";
 import { getAnalytics } from "@/lib/analytics";
