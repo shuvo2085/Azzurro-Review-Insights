@@ -86,7 +86,7 @@ export default function DashboardPage() {
       const res=await fetch("/api/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reviews:rows})});
       const data=await res.json();
       if(!res.ok){setMessage(data.error || "Import failed");return;}
-      setMessage(`Imported ${data.imported} reviews successfully.`); await load();
+      setMessage(`Imported ${data.imported} reviews successfully.${data.scaled?" Ratings looked like a 5-star scale, so they were converted to 10-point.":""}`); await load();
     }});
   }
 
