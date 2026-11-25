@@ -24,12 +24,28 @@ export default function DashboardPage() {
 
   async function load() {
     setMessage("");
-    const res = await fetch("/api/reviews");
-    const data = await res.json();
-    if (!res.ok) { setMessage(data.error || "Could not load reviews"); return; }
-    setReviews(data.reviews); setMode(data.mode);
+    try {
+      const res = await fetch("/api/reviews");
+      const data = await res.json();
+      if (!res.ok) { setMessage(data.error || "Could not load reviews"); setMode("error"); return; }
+      setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+      setMode(data.mode || "supabase");
+    } catch {
+      setMessage("Could not reach the server. Check your connection and try again.");
+      setMode("error");
+    }
   }
   useEffect(()=>{ load(); },[]);
+
+  const propertyOptions = useMemo(()=>{
+    const seen = new Set<string>();
+    [...properties, ...reviews.map(r=>r.property)].forEach(p=>{ if(p) seen.add(p); });
+    return [...seen];
+  },[reviews]);
+
+  useEffect(()=>{
+    if (property !== "All properties" && !propertyOptions.includes(property)) setProperty("All properties");
+  },[property, propertyOptions]);
 
   const filtered = useMemo(()=>reviews.filter(r =>
     (property==="All properties" || r.property===property) &&
@@ -80,7 +96,7 @@ export default function DashboardPage() {
         <div className="mb-10 flex items-center gap-3"><div className="rounded-xl bg-cyan-400/15 p-2 text-cyan-300"><Activity size={23}/></div><div><div className="font-semibold tracking-wide">AZZURRO</div><div className="text-xs text-slate-400">Review Intelligence</div></div></div>
         <div className="mb-3 text-[10px] font-semibold uppercase tracking-[.2em] text-slate-500">Workspace</div>
         <div className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3 text-sm"><LayoutDashboard size={17}/> Overview</div>
-        <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-slate-400">Data mode</div><div className="mt-1 text-sm font-medium">{mode==="supabase"?"Connected database":mode==="demo"?"Demonstration data":"Connecting..."}</div><div className="mt-2 text-[11px] leading-5 text-slate-400">Use authorised property review exports for production analysis.</div></div>
+        <div className="mt-auto rounded-xl border border-white/10 bg-white/5 p-3"><div className="text-xs text-slate-400">Data mode</div><div className="mt-1 text-sm font-medium">{mode==="supabase"?"Connected database":mode==="demo"?"Demonstration data":mode==="error"?"Connection issue":"Connecting..."}</div><div className="mt-2 text-[11px] leading-5 text-slate-400">Use authorised property review exports for production analysis.</div></div>
       </aside>
 
       <section className="min-w-0 flex-1">
@@ -93,7 +109,7 @@ export default function DashboardPage() {
           {mode==="demo" && <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"><strong>Demo mode:</strong> These are fictional demonstration reviews, not actual Booking.com guest data.</div>}
           {message && <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">{message}</div>}
 
-          <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold">Property performance</h2><p className="mt-1 text-sm text-slate-500">A consolidated view of guest feedback across the portfolio.</p></div><div className="flex flex-wrap gap-2"><select value={property} onChange={e=>setProperty(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>All properties</option>{properties.map(p=><option key={p}>{p}</option>)}</select><select value={sentiment} onChange={e=>setSentiment(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>All sentiments</option><option>Positive</option><option>Neutral</option><option>Negative</option></select></div></div>
+          <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold">Property performance</h2><p className="mt-1 text-sm text-slate-500">A consolidated view of guest feedback across the portfolio.</p></div><div className="flex flex-wrap gap-2"><select value={property} onChange={e=>setProperty(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>All properties</option>{propertyOptions.map(p=><option key={p}>{p}</option>)}</select><select value={sentiment} onChange={e=>setSentiment(e.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>All sentiments</option><option>Positive</option><option>Neutral</option><option>Negative</option></select></div></div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Metric icon={<MessageSquareText/>} label="Total reviews" value={stats.total.toLocaleString()} note="In current selection" tint="blue"/>
